@@ -1,4 +1,8 @@
 ﻿using LibAtem.Commands;
+using LibAtem.Commands.Audio;
+using LibAtem.Commands.DeviceProfile;
+using LibAtem.Commands.Settings;
+using LibAtem.Commands.SuperSource;
 using LibAtem.Test.Util;
 using Newtonsoft.Json;
 using System;
@@ -20,12 +24,28 @@ namespace AtemCommandTestGenerator
     {
         private static IEnumerable<CommandEntry> GenerateData()
         {
+            var allowedTypes = new List<Type>(){
+                typeof(SuperSourceBorderGetCommand),
+                typeof(SuperSourceBorderSetCommand),
+                typeof(SuperSourceBoxGetCommand),
+                typeof(SuperSourceBoxSetCommand),
+                typeof(SuperSourcePropertiesGetCommand),
+                typeof(SuperSourcePropertiesSetCommand),
+
+                typeof(AudioMixerInputGetCommand),
+                typeof(VideoMixerConfigCommand),
+                typeof(TopologyCommand),
+                typeof(MultiviewerConfigCommand),
+            };
 
             Assembly assembly = typeof(ICommand).GetTypeInfo().Assembly;
             IEnumerable<Type> types = assembly.GetTypes().Where(t => typeof(SerializableCommandBase).GetTypeInfo().IsAssignableFrom(t));
             foreach (Type type in types)
             {
                 if (type.IsAbstract)
+                    continue;
+
+                if (!allowedTypes.Contains(type))
                     continue;
 
                 for(int i = 0; i < 10; i++)
