@@ -35,3 +35,4 @@ logs/
 
 *.out
 data.json
+/.idea
