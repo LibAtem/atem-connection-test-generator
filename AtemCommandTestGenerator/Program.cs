@@ -1,8 +1,5 @@
 ﻿using LibAtem.Commands;
-using LibAtem.Commands.Audio;
-using LibAtem.Commands.DeviceProfile;
-using LibAtem.Commands.Settings;
-using LibAtem.Commands.SuperSource;
+using LibAtem.Commands.DownstreamKey;
 using LibAtem.Test.Util;
 using Newtonsoft.Json;
 using System;
@@ -25,17 +22,8 @@ namespace AtemCommandTestGenerator
         private static IEnumerable<CommandEntry> GenerateData()
         {
             var allowedTypes = new List<Type>(){
-                typeof(SuperSourceBorderGetCommand),
-                typeof(SuperSourceBorderSetCommand),
-                typeof(SuperSourceBoxGetCommand),
-                typeof(SuperSourceBoxSetCommand),
-                typeof(SuperSourcePropertiesGetCommand),
-                typeof(SuperSourcePropertiesSetCommand),
-
-                typeof(AudioMixerInputGetCommand),
-                typeof(VideoMixerConfigCommand),
-                typeof(TopologyCommand),
-                typeof(MultiviewerConfigCommand),
+                typeof(DownstreamKeyStateGetCommand),
+                typeof(DownstreamKeyAutoCommand),
             };
 
             Assembly assembly = typeof(ICommand).GetTypeInfo().Assembly;
@@ -48,7 +36,7 @@ namespace AtemCommandTestGenerator
                 if (!allowedTypes.Contains(type))
                     continue;
 
-                for(int i = 0; i < 10; i++)
+                for (int i = 0; i < 10; i++)
                 {
                     ICommand raw = (ICommand)RandomPropertyGenerator.Create(type);
                     string bytes = BitConverter.ToString(raw.ToByteArray());
@@ -66,7 +54,7 @@ namespace AtemCommandTestGenerator
         }
 
         static void Main(string[] args)
-        { 
+        {
             var data = GenerateData().ToList();
             var str = JsonConvert.SerializeObject(data, Formatting.Indented);
             File.WriteAllText("data.json", str);
