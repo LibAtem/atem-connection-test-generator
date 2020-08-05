@@ -1,6 +1,5 @@
 ﻿using LibAtem.Commands;
 using LibAtem.Commands.DataTransfer;
-using LibAtem.Commands.DeviceProfile;
 using LibAtem.Test.Util;
 using Newtonsoft.Json;
 using System;
@@ -8,24 +7,22 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using LibAtem;
-using LibAtem.Commands.Settings.Multiview;
-using LibAtem.Commands.MixEffects;
-using LibAtem.Commands.MixEffects.Key;
-using LibAtem.Common;
-using LibAtem.Net;
 
 namespace AtemCommandTestGenerator
 {
     class CommandEntry
     {
-        public CommandEntry(ICommand raw) {
-            name = CommandManager.FindNameForType(raw);
+        public CommandEntry(ICommand raw)
+        {
+            var info = CommandManager.FindNameAndVersionForType(raw);
+            name = info.Item1;
+            firstVersion = (uint) info.Item2;
             bytes = BitConverter.ToString(raw.ToByteArray());
             command = raw;
         }
 
         public string name;
+        public uint firstVersion;
         public string bytes;
         public ICommand command;
     }
