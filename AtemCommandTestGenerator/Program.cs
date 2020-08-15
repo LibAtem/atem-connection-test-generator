@@ -122,22 +122,24 @@ namespace AtemCommandTestGenerator
         static string GenerateCommandHash(Type t)
         {
             var str = new StringBuilder();
+
+            var cmdAttr = t.GetCustomAttribute<CommandNameAttribute>();
+            str.Append($"{cmdAttr.Name},{cmdAttr.MinimumVersion},{cmdAttr.Length}:");
             
             foreach (PropertyInfo prop in t.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
             {
                 var serAttr = prop.GetCustomAttribute<SerializeAttribute>();
-                if (serAttr == null)
-                    continue;
-
-                str.AppendFormat($"{prop.Name},{serAttr.StartByte},");
-
+                
                 SerializableAttributeBase attr = prop.GetCustomAttributes().OfType<SerializableAttributeBase>().FirstOrDefault();
                 if (attr != null)
                 {
-                    str.AppendFormat($"{attr.GetType().FullName},{attr.Size},{attr.GetHashString()}.");
+                    str.Append($"{prop.Name},{serAttr?.StartByte ?? 0},{attr.GetType().FullName},{attr.Size},{attr.GetHashString()}.");
                     continue;
                 }
 
+                if (serAttr == null)
+                    continue;
+                
                 Assert.True(false, string.Format("Missing generator attribute for property: {0}", prop.Name));
             }
             
