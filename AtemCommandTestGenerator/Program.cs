@@ -4,7 +4,6 @@ using LibAtem.Test.Util;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -35,6 +34,24 @@ namespace AtemCommandTestGenerator
         public string bytes;
         public object command;
         public string commandHash;
+    }
+    
+    public class Int64Converter : JsonConverter<long>
+    {
+        public override void WriteJson(JsonWriter writer, long value, JsonSerializer serializer)
+        {
+            if (writer.Path.EndsWith("SourceId"))
+                writer.WriteValue(value.ToString());
+            else
+                writer.WriteValue(value);
+        }
+
+        public override long ReadJson(JsonReader reader, Type objectType, long existingValue, bool hasExistingValue, JsonSerializer serializer)
+        {
+            // Note: we don't deserialize in a way that will require this to do any conversion
+            return (long) reader.Value;
+        }
+
     }
 
     class Program
@@ -108,7 +125,7 @@ namespace AtemCommandTestGenerator
                     ICommand raw = (ICommand)RandomPropertyGenerator.Create(type);
 
                     var cs1 = new CommandEntry(raw) {commandHash = commandHash};
-                    var cs1s = JsonConvert.SerializeObject(cs1, Formatting.Indented);
+                    var cs1s = JsonConvert.SerializeObject(cs1, Formatting.Indented, new Int64Converter());
                     if (cases.Contains(cs1s)) {
                         continue;
                     }
@@ -154,11 +171,11 @@ namespace AtemCommandTestGenerator
             if (File.Exists("data.json"))
             {
                 var lastDataStr = File.ReadAllText("data.json");
-                lastData = JsonConvert.DeserializeObject<List<CommandEntry>>(lastDataStr);
+                lastData = JsonConvert.DeserializeObject<List<CommandEntry>>(lastDataStr, new Int64Converter());
             }
             
             var data = GenerateData(lastData).ToList();
-            var str = JsonConvert.SerializeObject(data, Formatting.Indented);
+            var str = JsonConvert.SerializeObject(data, Formatting.Indented, new Int64Converter());
             File.WriteAllText("data.json", str);
             //var file = new StreamWriter("commands.json");
             Console.WriteLine("Hello World!");
