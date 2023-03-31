@@ -15,24 +15,8 @@ namespace AtemCommandTestGenerator
 {
     class AutoCommandGenerator
     {
-        public static IEnumerable<CommandEntry> GenerateData(IReadOnlyList<CommandEntry> lastData)
+        public static IEnumerable<CommandEntry> GenerateData(Dictionary<string, List<CommandEntry>> lastData)
         {
-            var lastDataByHash = new Dictionary<string, List<CommandEntry>>();
-            foreach (CommandEntry entry in lastData)
-            {
-                if (string.IsNullOrEmpty(entry.commandHash))
-                    continue;
-
-                if (lastDataByHash.TryGetValue(entry.commandHash, out var tmp))
-                {
-                    tmp.Add(entry);
-                }
-                else
-                {
-                    lastDataByHash.Add(entry.commandHash, new List<CommandEntry> { entry });
-                }
-            }
-
             Assembly assembly = typeof(ICommand).GetTypeInfo().Assembly;
             IEnumerable<Type> types = assembly.GetTypes().Where(t => typeof(ICommand).GetTypeInfo().IsAssignableFrom(t));
             foreach (Type type in types)
@@ -41,7 +25,7 @@ namespace AtemCommandTestGenerator
                     continue;
 
                 var commandHash = GenerateCommandHash(type);
-                if (lastDataByHash.TryGetValue(commandHash, out var previous))
+                if (lastData.TryGetValue(commandHash, out var previous))
                 {
                     // Re-use the ones from last time, as they must still be valid
 
@@ -59,12 +43,12 @@ namespace AtemCommandTestGenerator
                         yield return new CommandEntry(new DataTransferDataCommand
                         {
                             TransferId = 0x1bf4,
-                            Body = Util.RandomBytes(12)
+                            Body = Randomiser.Bytes(12)
                         });
                         yield return new CommandEntry(new DataTransferDataCommand
                         {
                             TransferId = 0x001b,
-                            Body = Util.RandomBytes(242)
+                            Body = Randomiser.Bytes(242)
                         });
                     }
 
@@ -93,7 +77,7 @@ namespace AtemCommandTestGenerator
             }
         }
 
-        static string GenerateCommandHash(Type t)
+        public static string GenerateCommandHash(Type t)
         {
             var str = new StringBuilder();
 
